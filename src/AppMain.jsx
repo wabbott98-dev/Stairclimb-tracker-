@@ -17,10 +17,15 @@ const days=()=>Math.ceil((ED-new Date())/86400000);
 const inp={background:"#0a0a18",border:"1px solid #1c1c2e",borderRadius:8,color:"#fff",padding:"9px 12px",fontSize:16,width:"100%",boxSizing:"border-box",WebkitAppearance:"none"};
 const lbl={color:"#555",fontSize:10,marginBottom:4,display:"block",textTransform:"uppercase",letterSpacing:"0.08em"};
 const card={background:"#0d0d1a",borderRadius:16,padding:16,marginBottom:14,border:"1px solid #1c1c2e"};
+
 function SBar({label,value,goal,color,unit}){const p=Math.min((value/goal)*100,100),o=value>=goal;return(<div style={{marginBottom:10}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{color:"#777",fontSize:12}}>{label}</span><span style={{color:o?color:"#ccc",fontSize:12,fontWeight:600}}>{typeof value==="number"&&value%1!==0?value.toFixed(2):value.toLocaleString()}<span style={{color:"#444",fontSize:10}}> / {goal} {unit}</span>{o&&<span style={{color,marginLeft:4}}>✓</span>}</span></div><div style={{background:"#111",borderRadius:4,height:5}}><div style={{width:`${p}%`,background:color,height:"100%",borderRadius:4}}/></div></div>);}
+
 function Ring({value,goal,color,label,unit,size=78}){const p=Math.min(value/goal,1.5),r=(size-14)/2,c=2*Math.PI*r,f=Math.min(p,1)*c,o=p>1?(p-1)*c:0;return(<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}><svg width={size}height={size}style={{transform:"rotate(-90deg)"}}><circle cx={size/2}cy={size/2}r={r}fill="none"stroke="#1a1a2e"strokeWidth={11}/><circle cx={size/2}cy={size/2}r={r}fill="none"stroke={color}strokeWidth={11}strokeDasharray={`${f} ${c-f}`}strokeLinecap="round"opacity={0.95}/>{o>0&&<circle cx={size/2}cy={size/2}r={r}fill="none"stroke="#fff"strokeWidth={7}strokeDasharray={`${o} ${c-o}`}strokeLinecap="round"opacity={0.5}/>}</svg><div style={{textAlign:"center"}}><div style={{color,fontWeight:700,fontSize:13}}>{typeof value==="number"&&value%1!==0?value.toFixed(1):value.toLocaleString()}</div><div style={{color:"#555",fontSize:10}}>{label}</div><div style={{color:"#333",fontSize:9}}>/{goal} {unit}</div></div></div>);}
+
 function WBar({oz}){const p=Math.min((oz/GW)*100,100),m=oz>=GW;return(<div><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:8}}><div><div style={{color:"#444",fontSize:10,textTransform:"uppercase",marginBottom:3}}>💧 Water Intake</div><div style={{display:"flex",alignItems:"baseline",gap:4}}><span style={{color:m?"#5ac8fa":"#fff",fontSize:28,fontWeight:800,lineHeight:1}}>{oz}</span><span style={{color:"#444",fontSize:12}}>/ {GW} oz</span>{m&&<span style={{color:"#5ac8fa",fontSize:12}}>✓</span>}</div><div style={{color:"#333",fontSize:10,marginTop:2}}>≈{Math.round(oz/8)} glasses</div></div><div style={{fontSize:22}}>{p>=100?"💧💧💧":p>=75?"💧💧":p>=50?"💧":"🫙"}</div></div><div style={{display:"flex",gap:3,marginBottom:4}}>{Array.from({length:8}).map((_,i)=>{const s=i*16,e=(i+1)*16,f=oz>=e?1:oz>s?(oz-s)/16:0;return(<div key={i}style={{flex:1,height:10,background:"#0d0d1a",borderRadius:3,overflow:"hidden",position:"relative"}}><div style={{position:"absolute",left:0,top:0,width:`${f*100}%`,height:"100%",background:"linear-gradient(90deg,#1a5276,#5ac8fa)",borderRadius:3}}/></div>);})}</div><div style={{display:"flex",justifyContent:"space-between"}}>{["0","32","64","96","128🏆"].map((l,i)=><span key={i}style={{color:i===4&&m?"#5ac8fa":"#222",fontSize:9}}>{l}</span>)}</div></div>);}
+
 function DC({day,isSel,onClick}){const d=new Date(day.date+"T12:00:00"),dn=d.toLocaleDateString("en-US",{weekday:"short"}),dt=d.getDate(),hc=day.totalActiveCal>=GC,hw=(day.waterOz||0)>=GW;return(<div onClick={onClick}style={{background:isSel?"#0f3460":"#0d0d1a",border:`1px solid ${isSel?"#e94560":"#1c1c2e"}`,borderRadius:12,padding:"9px 12px",cursor:"pointer",minWidth:58,textAlign:"center",flexShrink:0}}><div style={{color:"#555",fontSize:9,textTransform:"uppercase"}}>{dn}</div><div style={{color:"#fff",fontSize:17,fontWeight:800,lineHeight:1.2}}>{dt}</div><div style={{display:"flex",justifyContent:"center",gap:3,marginTop:3}}><div style={{width:6,height:6,borderRadius:"50%",background:hc?"#e94560":"#1c1c2e"}}/><div style={{width:6,height:6,borderRadius:"50%",background:hw?"#5ac8fa":"#1c1c2e"}}/></div></div>);}
+
 function DayForm({initial,onSave,onCancel,title}){
 const[form,setForm]=useState(initial);
 const[customLoad,setCustomLoad]=useState(false);
@@ -69,10 +74,26 @@ return(<div style={{...card,border:"1px solid #e9456033"}}>
 </div>
 </div>);}
 
-function SleepTab(){const[logs,setLogs]=useState(()=>ld(SLPK,ISleep));const[adding,setAdding]=useState(false);const[form,setForm]=useState({date:new Date().toISOString().split("T")[0],hours:"",quality:"Good",score:"",bedtime:"",waketime:"",wakeups:"",interruptionMin:"",notes:""});const f=(k,v)=>setForm(p=>({...p,[k]:v}));useEffect(()=>{sv(SLPK,logs);},[logs]);function save(){if(!form.date||!form.hours)return;const e={id:Date.now(),...form,hours:parseFloat(form.hours),score:Number(form.score)||0,wakeups:Number(form.wakeups)||0,interruptionMin:Number(form.interruptionMin)||0};setSleepLogs(p=>[...p,e].sort((a,b)=>b.date.localeCompare(a.date)));setAdding(false);setForm({date:new Date().toISOString().split("T")[0],hours:"",quality:"Good",score:"",bedtime:"",waketime:"",wakeups:"",interruptionMin:"",notes:""});}
-const[sleepLogs,setSleepLogs]=useState(()=>ld(SLPK,ISleep));useEffect(()=>{sv(SLPK,sleepLogs);},[sleepLogs]);
+// ── SLEEP TAB ────────────────────────────────────────────────
+function SleepTab(){
+const[sleepLogs,setSleepLogs]=useState(()=>ld(SLPK,ISleep));
+const[adding,setAdding]=useState(false);
+const[editId,setEditId]=useState(null);
+const blank={date:new Date().toISOString().split("T")[0],hours:"",quality:"Good",score:"",bedtime:"",waketime:"",wakeups:"",interruptionMin:"",notes:""};
+const[form,setForm]=useState(blank);
+const f=(k,v)=>setForm(p=>({...p,[k]:v}));
+useEffect(()=>{sv(SLPK,sleepLogs);},[sleepLogs]);
 const avg=sleepLogs.length?sleepLogs.slice(0,7).reduce((s,l)=>s+(l.hours||0),0)/Math.min(sleepLogs.length,7):0;
 const qColor={Poor:"#e94560",OK:"#f5a623",Fair:"#f5a623",Good:"#92d36e",High:"#5ac8fa",Great:"#5ac8fa"};
+function openAdd(){setForm(blank);setEditId(null);setAdding(true);}
+function openEdit(l){setForm({date:l.date,hours:l.hours,quality:l.quality||"Good",score:l.score||"",bedtime:l.bedtime||"",waketime:l.waketime||"",wakeups:l.wakeups||"",interruptionMin:l.interruptionMin||"",notes:l.notes||""});setEditId(l.id);setAdding(true);}
+function deleteLog(id){if(window.confirm("Delete this sleep entry?"))setSleepLogs(p=>p.filter(l=>l.id!==id));}
+function save(){
+if(!form.date||!form.hours)return;
+const entry={...form,hours:parseFloat(form.hours),score:Number(form.score)||0,wakeups:Number(form.wakeups)||0,interruptionMin:Number(form.interruptionMin)||0};
+if(editId){setSleepLogs(p=>p.map(l=>l.id===editId?{...l,...entry}:l).sort((a,b)=>b.date.localeCompare(a.date)));}
+else{setSleepLogs(p=>[{id:Date.now(),...entry},...p].sort((a,b)=>b.date.localeCompare(a.date)));}
+setAdding(false);setEditId(null);setForm(blank);}
 return(<div>
 <div style={{...card,background:"linear-gradient(135deg,#0d0d1a,#0f1f40)"}}>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:12}}>
@@ -83,9 +104,9 @@ return(<div>
 <div style={{background:"#111",borderRadius:4,height:6,marginBottom:4}}><div style={{width:`${Math.min((avg/8)*100,100)}%`,background:"linear-gradient(90deg,#a78bfa,#5ac8fa)",height:"100%",borderRadius:4}}/></div>
 <div style={{color:"#333",fontSize:9}}>Goal: 7–8 hrs/night · Current avg: {avg.toFixed(1)}hrs</div>
 </div>
-{!adding&&<button onClick={()=>setAdding(true)}style={{width:"100%",background:"#0f1f40",border:"1px solid #a78bfa44",borderRadius:12,color:"#a78bfa",fontSize:14,fontWeight:700,padding:"12px 0",cursor:"pointer",marginBottom:14}}>+ Log Sleep</button>}
+{!adding&&<button onClick={openAdd}style={{width:"100%",background:"#0f1f40",border:"1px solid #a78bfa44",borderRadius:12,color:"#a78bfa",fontSize:14,fontWeight:700,padding:"12px 0",cursor:"pointer",marginBottom:14}}>+ Log Sleep</button>}
 {adding&&<div style={{...card,border:"1px solid #a78bfa44"}}>
-<div style={{color:"#a78bfa",fontSize:12,fontWeight:700,marginBottom:16,textTransform:"uppercase"}}>😴 Log Sleep</div>
+<div style={{color:"#a78bfa",fontSize:12,fontWeight:700,marginBottom:16,textTransform:"uppercase"}}>😴 {editId?"Edit Sleep":"Log Sleep"}</div>
 <div style={{marginBottom:12}}><label style={lbl}>Date</label><input type="date"style={inp}value={form.date}onChange={e=>f("date",e.target.value)}/></div>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
 <div><label style={lbl}>Bedtime</label><input type="time"style={inp}value={form.bedtime}onChange={e=>f("bedtime",e.target.value)}/></div>
@@ -105,27 +126,49 @@ return(<div>
 </div>
 <div style={{marginBottom:16}}><label style={lbl}>Notes</label><textarea rows={2}placeholder="How rested did you feel?"style={{...inp,resize:"none"}}value={form.notes}onChange={e=>f("notes",e.target.value)}/></div>
 <div style={{display:"flex",gap:10}}>
-<button onClick={()=>{if(!form.date||!form.hours)return;const e={id:Date.now(),...form,hours:parseFloat(form.hours),score:Number(form.score)||0,wakeups:Number(form.wakeups)||0,interruptionMin:Number(form.interruptionMin)||0};setSleepLogs(p=>[...p,e].sort((a,b)=>b.date.localeCompare(a.date)));setAdding(false);setForm({date:new Date().toISOString().split("T")[0],hours:"",quality:"Good",score:"",bedtime:"",waketime:"",wakeups:"",interruptionMin:"",notes:"",});}}style={{flex:2,background:"#a78bfa",border:"none",borderRadius:12,color:"#fff",fontSize:15,fontWeight:700,padding:"13px 0",cursor:"pointer"}}>Save</button>
-<button onClick={()=>setAdding(false)}style={{flex:1,background:"#111",border:"none",borderRadius:12,color:"#555",fontSize:14,padding:"13px 0",cursor:"pointer"}}>Cancel</button>
+<button onClick={save}style={{flex:2,background:"#a78bfa",border:"none",borderRadius:12,color:"#fff",fontSize:15,fontWeight:700,padding:"13px 0",cursor:"pointer"}}>{editId?"Update":"Save"}</button>
+<button onClick={()=>{setAdding(false);setEditId(null);}}style={{flex:1,background:"#111",border:"none",borderRadius:12,color:"#555",fontSize:14,padding:"13px 0",cursor:"pointer"}}>Cancel</button>
 </div></div>}
 {sleepLogs.map(l=><div key={l.id}style={card}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
 <div><div style={{color:"#fff",fontSize:13,fontWeight:700}}>{new Date(l.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})}</div><div style={{color:"#444",fontSize:10}}>{l.bedtime&&l.waketime?`${l.bedtime} → ${l.waketime}`:""}</div></div>
+<div style={{display:"flex",alignItems:"flex-start",gap:12}}>
 <div style={{textAlign:"right"}}><div style={{color:"#a78bfa",fontSize:22,fontWeight:800}}>{l.hours}h</div><div style={{color:qColor[l.quality]||"#555",fontSize:10,fontWeight:600}}>{l.quality}{l.score?` · ${l.score}`:""}</div></div>
-</div>
+<div style={{display:"flex",gap:10,paddingTop:2}}>
+<button onClick={()=>openEdit(l)}style={{background:"none",border:"none",color:"#5ac8fa",fontSize:11,cursor:"pointer",padding:0}}>edit</button>
+<button onClick={()=>deleteLog(l.id)}style={{background:"none",border:"none",color:"#2a2a3e",fontSize:11,cursor:"pointer",padding:0}}>delete</button>
+</div></div></div>
 <div style={{background:"#111",borderRadius:4,height:5,marginBottom:4}}><div style={{width:`${Math.min((l.hours/8)*100,100)}%`,background:l.hours>=7?"linear-gradient(90deg,#a78bfa,#5ac8fa)":"#e94560",height:"100%",borderRadius:4}}/></div>
 <div style={{display:"flex",justifyContent:"space-between"}}><div style={{color:"#333",fontSize:9}}>{l.hours>=7?"✓ Goal met":`${l.hours} / 7hr goal`}</div>{l.wakeups?<div style={{color:"#333",fontSize:9}}>{l.wakeups} wake-ups · {l.interruptionMin}min</div>:null}</div>
 {l.notes&&<div style={{color:"#666",fontSize:11,marginTop:8,fontStyle:"italic"}}>{l.notes}</div>}
 </div>)}
 {sleepLogs.length===0&&<div style={{textAlign:"center",color:"#333",fontSize:13,padding:"40px 0"}}>No sleep logs yet.</div>}
 </div>);}
-function FastTab(){const[fasts,setFasts]=useState(()=>ld(FSK,IFasts));const[adding,setAdding]=useState(false);const[form,setForm]=useState({startDate:new Date().toISOString().split("T")[0],startTime:"20:00",endDate:"",endTime:"",durationHrs:"",durationMin:"",zone:"Fat Burning",goalHrs:18,goalMet:false,notes:""});const f=(k,v)=>setForm(p=>({...p,[k]:v}));useEffect(()=>{sv(FSK,fasts);},[fasts]);
+
+// ── FAST TAB ─────────────────────────────────────────────────
+function FastTab(){
+const[fasts,setFasts]=useState(()=>ld(FSK,IFasts));
+const[adding,setAdding]=useState(false);
+const[editId,setEditId]=useState(null);
+const blank={startDate:new Date().toISOString().split("T")[0],startTime:"20:00",endDate:"",endTime:"",durationHrs:"",durationMin:"",zone:"Fat Burning",goalHrs:18,goalMet:false,notes:""};
+const[form,setForm]=useState(blank);
+const f=(k,v)=>setForm(p=>({...p,[k]:v}));
+useEffect(()=>{sv(FSK,fasts);},[fasts]);
 const zones=["Anabolic","Catabolic","Fat Burning","Ketosis","Deep Ketosis"];
 const zoneEmoji={"Anabolic":"🔧","Catabolic":"⚡","Fat Burning":"🔥","Ketosis":"🥑","Deep Ketosis":"🚀"};
 const zoneColor={"Anabolic":"#5ac8fa","Catabolic":"#f5a623","Fat Burning":"#e94560","Ketosis":"#92d36e","Deep Ketosis":"#a78bfa"};
-const totalHrs=fasts.reduce((s,f)=>s+(f.durationHrs||0),0);
-const deepFasts=fasts.filter(f=>f.durationHrs>=72).length;
+const totalHrs=fasts.reduce((s,fa)=>s+(fa.durationHrs||0),0);
+const deepFasts=fasts.filter(fa=>fa.durationHrs>=72).length;
 const avgHrs=fasts.length?totalHrs/fasts.length:0;
+function openAdd(){setForm(blank);setEditId(null);setAdding(true);}
+function openEdit(fa){setForm({startDate:fa.startDate,startTime:fa.startTime||"20:00",endDate:fa.endDate||"",endTime:fa.endTime||"",durationHrs:fa.durationHrs,durationMin:fa.durationMin||"",zone:fa.zone||"Fat Burning",goalHrs:fa.goalHrs||18,goalMet:fa.goalMet||false,notes:fa.notes||""});setEditId(fa.id);setAdding(true);}
+function deleteFast(id){if(window.confirm("Delete this fast?"))setFasts(p=>p.filter(fa=>fa.id!==id));}
+function save(){
+if(!form.startDate||!form.durationHrs)return;
+const entry={...form,durationHrs:Number(form.durationHrs),durationMin:Number(form.durationMin)||0,goalHrs:Number(form.goalHrs)||18};
+if(editId){setFasts(p=>p.map(fa=>fa.id===editId?{...fa,...entry}:fa));}
+else{setFasts(p=>[{id:Date.now(),...entry},...p]);}
+setAdding(false);setEditId(null);setForm(blank);}
 return(<div>
 <div style={{...card,background:"linear-gradient(135deg,#0d0d1a,#1a0f2e)"}}>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:12}}>
@@ -137,11 +180,10 @@ return(<div>
 <div style={{color:"#444",fontSize:9,textTransform:"uppercase",marginBottom:6}}>🚀 72hr Deep Ketosis Goal</div>
 <div style={{background:"#111",borderRadius:4,height:6,marginBottom:4}}><div style={{width:`${Math.min((avgHrs/72)*100,100)}%`,background:"linear-gradient(90deg,#f5a623,#a78bfa)",height:"100%",borderRadius:4}}/></div>
 <div style={{color:"#333",fontSize:9}}>Current avg: {avgHrs.toFixed(0)}hrs · Target: 72hrs</div>
-</div>
-</div>
-{!adding&&<button onClick={()=>setAdding(true)}style={{width:"100%",background:"#1a0f2e",border:"1px solid #f5a62344",borderRadius:12,color:"#f5a623",fontSize:14,fontWeight:700,padding:"12px 0",cursor:"pointer",marginBottom:14}}>+ Log Fast</button>}
+</div></div>
+{!adding&&<button onClick={openAdd}style={{width:"100%",background:"#1a0f2e",border:"1px solid #f5a62344",borderRadius:12,color:"#f5a623",fontSize:14,fontWeight:700,padding:"12px 0",cursor:"pointer",marginBottom:14}}>+ Log Fast</button>}
 {adding&&<div style={{...card,border:"1px solid #f5a62333"}}>
-<div style={{color:"#f5a623",fontSize:12,fontWeight:700,marginBottom:16,textTransform:"uppercase"}}>⚡ Log Fast</div>
+<div style={{color:"#f5a623",fontSize:12,fontWeight:700,marginBottom:16,textTransform:"uppercase"}}>⚡ {editId?"Edit Fast":"Log Fast"}</div>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
 <div><label style={lbl}>Start Date</label><input type="date"style={inp}value={form.startDate}onChange={e=>f("startDate",e.target.value)}/></div>
 <div><label style={lbl}>Start Time</label><input type="time"style={inp}value={form.startTime}onChange={e=>f("startTime",e.target.value)}/></div>
@@ -164,31 +206,52 @@ return(<div>
 </div>
 <div style={{marginBottom:16}}><label style={lbl}>Notes</label><textarea rows={2}placeholder="How did you feel? What broke the fast?"style={{...inp,resize:"none"}}value={form.notes}onChange={e=>f("notes",e.target.value)}/></div>
 <div style={{display:"flex",gap:10}}>
-<button onClick={()=>{if(!form.startDate||!form.durationHrs)return;const e={id:Date.now(),...form,durationHrs:Number(form.durationHrs),durationMin:Number(form.durationMin)||0,goalHrs:Number(form.goalHrs)||18};setFasts(p=>[e,...p]);setAdding(false);setForm({startDate:new Date().toISOString().split("T")[0],startTime:"20:00",endDate:"",endTime:"",durationHrs:"",durationMin:"",zone:"Fat Burning",goalHrs:18,goalMet:false,notes:"",});}}style={{flex:2,background:"#f5a623",border:"none",borderRadius:12,color:"#000",fontSize:15,fontWeight:700,padding:"13px 0",cursor:"pointer"}}>Save</button>
-<button onClick={()=>setAdding(false)}style={{flex:1,background:"#111",border:"none",borderRadius:12,color:"#555",fontSize:14,padding:"13px 0",cursor:"pointer"}}>Cancel</button>
+<button onClick={save}style={{flex:2,background:"#f5a623",border:"none",borderRadius:12,color:"#000",fontSize:15,fontWeight:700,padding:"13px 0",cursor:"pointer"}}>{editId?"Update":"Save"}</button>
+<button onClick={()=>{setAdding(false);setEditId(null);}}style={{flex:1,background:"#111",border:"none",borderRadius:12,color:"#555",fontSize:14,padding:"13px 0",cursor:"pointer"}}>Cancel</button>
 </div></div>}
 {fasts.map(fa=><div key={fa.id}style={card}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
 <div><div style={{color:"#fff",fontSize:13,fontWeight:700}}>{fa.startDate} {fa.startTime}→{fa.endDate} {fa.endTime}</div><div style={{color:zoneColor[fa.zone]||"#f5a623",fontSize:12,fontWeight:700,marginTop:2}}>{zoneEmoji[fa.zone]} {fa.zone}</div></div>
+<div style={{display:"flex",alignItems:"flex-start",gap:12}}>
 <div style={{textAlign:"right"}}><div style={{color:"#f5a623",fontSize:22,fontWeight:800}}>{fa.durationHrs}h{fa.durationMin?` ${fa.durationMin}m`:""}</div>{fa.goalMet&&<div style={{color:"#92d36e",fontSize:10}}>✓ Goal met</div>}</div>
-</div>
+<div style={{display:"flex",gap:10,paddingTop:2}}>
+<button onClick={()=>openEdit(fa)}style={{background:"none",border:"none",color:"#5ac8fa",fontSize:11,cursor:"pointer",padding:0}}>edit</button>
+<button onClick={()=>deleteFast(fa.id)}style={{background:"none",border:"none",color:"#2a2a3e",fontSize:11,cursor:"pointer",padding:0}}>delete</button>
+</div></div></div>
 <div style={{background:"#111",borderRadius:4,height:5,marginBottom:4}}><div style={{width:`${Math.min((fa.durationHrs/72)*100,100)}%`,background:`linear-gradient(90deg,#f5a623,${zoneColor[fa.zone]||"#a78bfa"})`,height:"100%",borderRadius:4}}/></div>
 <div style={{color:"#333",fontSize:9,marginBottom:fa.notes?6:0}}>{fa.durationHrs}hrs / 72hr Deep Ketosis goal</div>
 {fa.notes&&<div style={{color:"#666",fontSize:11,fontStyle:"italic"}}>{fa.notes}</div>}
 </div>)}
 {fasts.length===0&&<div style={{textAlign:"center",color:"#333",fontSize:13,padding:"40px 0"}}>No fasts logged yet.</div>}
 </div>);}
-function NutriTab(){const[logs,setNutriLogs]=useState(()=>ld(NUTK,INutrition));const[adding,setAdding]=useState(false);const[form,setForm]=useState({date:new Date().toISOString().split("T")[0],breakfast:"",lunch:"",dinner:"",snacks:"",calories:"",protein:"",notes:""});const f=(k,v)=>setForm(p=>({...p,[k]:v}));useEffect(()=>{sv(NUTK,logs);},[logs]);
+
+// ── NUTRITION TAB ────────────────────────────────────────────
+function NutriTab(){
+const[logs,setNutriLogs]=useState(()=>ld(NUTK,INutrition));
+const[adding,setAdding]=useState(false);
+const[editId,setEditId]=useState(null);
+const blank={date:new Date().toISOString().split("T")[0],breakfast:"",lunch:"",dinner:"",snacks:"",calories:"",protein:"",notes:""};
+const[form,setForm]=useState(blank);
+const f=(k,v)=>setForm(p=>({...p,[k]:v}));
+useEffect(()=>{sv(NUTK,logs);},[logs]);
+function openAdd(){setForm(blank);setEditId(null);setAdding(true);}
+function openEdit(l){setForm({date:l.date,breakfast:l.breakfast||"",lunch:l.lunch||"",dinner:l.dinner||"",snacks:l.snacks||"",calories:l.calories||"",protein:l.protein||"",notes:l.notes||""});setEditId(l.id);setAdding(true);}
+function deleteLog(id){if(window.confirm("Delete this nutrition entry?"))setNutriLogs(p=>p.filter(l=>l.id!==id));}
+function save(){
+if(!form.date)return;
+const entry={...form,calories:Number(form.calories)||0,protein:Number(form.protein)||0};
+if(editId){setNutriLogs(p=>p.map(l=>l.id===editId?{...l,...entry}:l).sort((a,b)=>b.date.localeCompare(a.date)));}
+else{setNutriLogs(p=>[{id:Date.now(),...entry},...p].sort((a,b)=>b.date.localeCompare(a.date)));}
+setAdding(false);setEditId(null);setForm(blank);}
 return(<div>
 <div style={{...card,background:"linear-gradient(135deg,#0d0d1a,#0f2010)"}}>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
 <div style={{textAlign:"center"}}><div style={{color:"#92d36e",fontSize:22,fontWeight:800}}>{logs.length}</div><div style={{color:"#444",fontSize:9,textTransform:"uppercase"}}>days logged</div></div>
 <div style={{textAlign:"center"}}><div style={{color:"#f5a623",fontSize:22,fontWeight:800}}>{logs.filter(l=>l.dinner).length}</div><div style={{color:"#444",fontSize:9,textTransform:"uppercase"}}>dinners logged</div></div>
-</div>
-</div>
-{!adding&&<button onClick={()=>setAdding(true)}style={{width:"100%",background:"#0f2010",border:"1px solid #92d36e44",borderRadius:12,color:"#92d36e",fontSize:14,fontWeight:700,padding:"12px 0",cursor:"pointer",marginBottom:14}}>+ Log Nutrition</button>}
+</div></div>
+{!adding&&<button onClick={openAdd}style={{width:"100%",background:"#0f2010",border:"1px solid #92d36e44",borderRadius:12,color:"#92d36e",fontSize:14,fontWeight:700,padding:"12px 0",cursor:"pointer",marginBottom:14}}>+ Log Nutrition</button>}
 {adding&&<div style={{...card,border:"1px solid #92d36e33"}}>
-<div style={{color:"#92d36e",fontSize:12,fontWeight:700,marginBottom:16,textTransform:"uppercase"}}>🥗 Log Nutrition</div>
+<div style={{color:"#92d36e",fontSize:12,fontWeight:700,marginBottom:16,textTransform:"uppercase"}}>🥗 {editId?"Edit Nutrition":"Log Nutrition"}</div>
 <div style={{marginBottom:12}}><label style={lbl}>Date</label><input type="date"style={inp}value={form.date}onChange={e=>f("date",e.target.value)}/></div>
 {[{l:"🌅 Breakfast",k:"breakfast",p:"e.g. Oatmeal, eggs, fruit"},{l:"☀️ Lunch",k:"lunch",p:"e.g. Grilled chicken salad"},{l:"🌙 Dinner",k:"dinner",p:"e.g. Steamed veggies, fish"},{l:"🍎 Snacks",k:"snacks",p:"e.g. Almonds, apple"}].map(fi=><div key={fi.k}style={{marginBottom:12}}><label style={lbl}>{fi.l}</label><input type="text"placeholder={fi.p}style={inp}value={form[fi.k]}onChange={e=>f(fi.k,e.target.value)}/></div>)}
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
@@ -197,20 +260,48 @@ return(<div>
 </div>
 <div style={{marginBottom:16}}><label style={lbl}>Notes</label><textarea rows={2}placeholder="How did you eat today? Fasting window?"style={{...inp,resize:"none"}}value={form.notes}onChange={e=>f("notes",e.target.value)}/></div>
 <div style={{display:"flex",gap:10}}>
-<button onClick={()=>{if(!form.date)return;const e={id:Date.now(),...form,calories:Number(form.calories)||0,protein:Number(form.protein)||0};setNutriLogs(p=>[e,...p].sort((a,b)=>b.date.localeCompare(a.date)));setAdding(false);setForm({date:new Date().toISOString().split("T")[0],breakfast:"",lunch:"",dinner:"",snacks:"",calories:"",protein:"",notes:"",});}}style={{flex:2,background:"#92d36e",border:"none",borderRadius:12,color:"#000",fontSize:15,fontWeight:700,padding:"13px 0",cursor:"pointer"}}>Save</button>
-<button onClick={()=>setAdding(false)}style={{flex:1,background:"#111",border:"none",borderRadius:12,color:"#555",fontSize:14,padding:"13px 0",cursor:"pointer"}}>Cancel</button>
+<button onClick={save}style={{flex:2,background:"#92d36e",border:"none",borderRadius:12,color:"#000",fontSize:15,fontWeight:700,padding:"13px 0",cursor:"pointer"}}>{editId?"Update":"Save"}</button>
+<button onClick={()=>{setAdding(false);setEditId(null);}}style={{flex:1,background:"#111",border:"none",borderRadius:12,color:"#555",fontSize:14,padding:"13px 0",cursor:"pointer"}}>Cancel</button>
 </div></div>}
 {logs.map(l=><div key={l.id}style={card}>
-<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><div style={{color:"#fff",fontSize:13,fontWeight:700}}>{new Date(l.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})}</div><div style={{display:"flex",gap:8}}>{l.calories?<span style={{color:"#f5a623",fontSize:11}}>{l.calories}cal</span>:null}{l.protein?<span style={{color:"#92d36e",fontSize:11}}>{l.protein}g protein</span>:null}</div></div>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+<div style={{color:"#fff",fontSize:13,fontWeight:700}}>{new Date(l.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})}</div>
+<div style={{display:"flex",alignItems:"center",gap:10}}>
+{l.calories?<span style={{color:"#f5a623",fontSize:11}}>{l.calories}cal</span>:null}
+{l.protein?<span style={{color:"#92d36e",fontSize:11}}>{l.protein}g protein</span>:null}
+<button onClick={()=>openEdit(l)}style={{background:"none",border:"none",color:"#5ac8fa",fontSize:11,cursor:"pointer",padding:0}}>edit</button>
+<button onClick={()=>deleteLog(l.id)}style={{background:"none",border:"none",color:"#2a2a3e",fontSize:11,cursor:"pointer",padding:0}}>delete</button>
+</div></div>
 {[{l:"🌅 Breakfast",k:"breakfast"},{l:"☀️ Lunch",k:"lunch"},{l:"🌙 Dinner",k:"dinner"},{l:"🍎 Snacks",k:"snacks"}].map(fi=>l[fi.k]?<div key={fi.k}style={{marginBottom:6}}><div style={{color:"#444",fontSize:9,textTransform:"uppercase"}}>{fi.l}</div><div style={{color:"#ccc",fontSize:12}}>{l[fi.k]}</div></div>:null)}
 {l.notes&&<div style={{color:"#666",fontSize:11,marginTop:6,fontStyle:"italic"}}>{l.notes}</div>}
 </div>)}
 {logs.length===0&&<div style={{textAlign:"center",color:"#333",fontSize:13,padding:"40px 0"}}>No nutrition logs yet.</div>}
 </div>);}
-function WeightTab(){const[logs,setLogs]=useState(()=>ld(WTK,[]));const[adding,setAdding]=useState(false);const[form,setForm]=useState({date:new Date().toISOString().split("T")[0],weight:"",bodyFat:"",muscleMass:"",bmi:"",hydration:"",notes:""});const f=(k,v)=>setForm(p=>({...p,[k]:v}));useEffect(()=>{sv(WTK,logs);},[logs]);
+
+// ── WEIGHT TAB ───────────────────────────────────────────────
+function WeightTab(){
+const[logs,setLogs]=useState(()=>ld(WTK,[]));
+const[adding,setAdding]=useState(false);
+const[editId,setEditId]=useState(null);
+const[validErr,setValidErr]=useState("");
+const blank={date:new Date().toISOString().split("T")[0],weight:"",bodyFat:"",muscleMass:"",bmi:"",hydration:"",notes:""};
+const[form,setForm]=useState(blank);
+const f=(k,v)=>{setValidErr("");setForm(p=>({...p,[k]:v}));};
+useEffect(()=>{sv(WTK,logs);},[logs]);
 const sorted=[...logs].sort((a,b)=>a.date.localeCompare(b.date));
 const first=sorted[0];const last=sorted[sorted.length-1];
 const change=first&&last&&first.id!==last.id?last.weight-first.weight:0;
+function openAdd(){setForm(blank);setEditId(null);setValidErr("");setAdding(true);}
+function openEdit(l){setForm({date:l.date,weight:l.weight,bodyFat:l.bodyFat||"",muscleMass:l.muscleMass||"",bmi:l.bmi||"",hydration:l.hydration||"",notes:l.notes||""});setEditId(l.id);setValidErr("");setAdding(true);}
+function deleteLog(id){if(window.confirm("Delete this weight entry?"))setLogs(p=>p.filter(l=>l.id!==id));}
+function save(){
+if(!form.date||!form.weight)return;
+const bf=parseFloat(form.bodyFat)||0,mm=parseFloat(form.muscleMass)||0;
+if(bf>0&&mm>0&&bf+mm>105){setValidErr(`⚠️ Body fat (${bf}%) + muscle (${mm}%) = ${bf+mm}%. Total can't exceed ~100%. Check your values.`);return;}
+const entry={...form,weight:parseFloat(form.weight),bodyFat:bf,muscleMass:mm,hydration:parseFloat(form.hydration)||0,bmi:parseFloat(form.bmi)||0};
+if(editId){setLogs(p=>p.map(l=>l.id===editId?{...l,...entry}:l).sort((a,b)=>a.date.localeCompare(b.date)));}
+else{setLogs(p=>[...p,{id:Date.now(),...entry}].sort((a,b)=>a.date.localeCompare(b.date)));}
+setAdding(false);setEditId(null);setForm(blank);setValidErr("");}
 return(<div>
 <div style={{...card,background:"linear-gradient(135deg,#0d0d1a,#1a1a0f)"}}>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:12}}>
@@ -225,9 +316,10 @@ return(<div>
 <div style={{color:"#333",fontSize:9}}>Last 7 weigh-ins trend</div>
 </div>}
 </div>
-{!adding&&<button onClick={()=>setAdding(true)}style={{width:"100%",background:"#1a1a0f",border:"1px solid #f5a62344",borderRadius:12,color:"#f5a623",fontSize:14,fontWeight:700,padding:"12px 0",cursor:"pointer",marginBottom:14}}>+ Log Weight</button>}
+{!adding&&<button onClick={openAdd}style={{width:"100%",background:"#1a1a0f",border:"1px solid #f5a62344",borderRadius:12,color:"#f5a623",fontSize:14,fontWeight:700,padding:"12px 0",cursor:"pointer",marginBottom:14}}>+ Log Weight</button>}
 {adding&&<div style={{...card,border:"1px solid #f5a62333"}}>
-<div style={{color:"#f5a623",fontSize:12,fontWeight:700,marginBottom:16,textTransform:"uppercase"}}>⚖ Log Weight</div>
+<div style={{color:"#f5a623",fontSize:12,fontWeight:700,marginBottom:16,textTransform:"uppercase"}}>⚖️ {editId?"Edit Weight":"Log Weight"}</div>
+{validErr&&<div style={{background:"#e9456022",border:"1px solid #e9456044",borderRadius:8,padding:"8px 12px",marginBottom:12,color:"#e94560",fontSize:12}}>{validErr}</div>}
 <div style={{marginBottom:12}}><label style={lbl}>Date</label><input type="date"style={inp}value={form.date}onChange={e=>f("date",e.target.value)}/></div>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
 <div><label style={lbl}>Weight (lbs)</label><input type="number"placeholder="185"inputMode="decimal"step="0.1"style={inp}value={form.weight}onChange={e=>f("weight",e.target.value)}/></div>
@@ -240,14 +332,18 @@ return(<div>
 <div style={{marginBottom:12}}><label style={lbl}>BMI</label><input type="number"placeholder="24.5"inputMode="decimal"step="0.1"style={inp}value={form.bmi}onChange={e=>f("bmi",e.target.value)}/></div>
 <div style={{marginBottom:16}}><label style={lbl}>Notes</label><textarea rows={2}placeholder="Morning weigh-in, post workout, etc."style={{...inp,resize:"none"}}value={form.notes}onChange={e=>f("notes",e.target.value)}/></div>
 <div style={{display:"flex",gap:10}}>
-<button onClick={()=>{if(!form.date||!form.weight)return;const e={id:Date.now(),...form,weight:parseFloat(form.weight),bodyFat:parseFloat(form.bodyFat)||0,muscleMass:parseFloat(form.muscleMass)||0,hydration:parseFloat(form.hydration)||0,bmi:parseFloat(form.bmi)||0};setLogs(p=>[...p,e].sort((a,b)=>a.date.localeCompare(b.date)));setAdding(false);setForm({date:new Date().toISOString().split("T")[0],weight:"",bodyFat:"",muscleMass:"",bmi:"",hydration:"",notes:"",});}}style={{flex:2,background:"#f5a623",border:"none",borderRadius:12,color:"#000",fontSize:15,fontWeight:700,padding:"13px 0",cursor:"pointer"}}>Save</button>
-<button onClick={()=>setAdding(false)}style={{flex:1,background:"#111",border:"none",borderRadius:12,color:"#555",fontSize:14,padding:"13px 0",cursor:"pointer"}}>Cancel</button>
+<button onClick={save}style={{flex:2,background:"#f5a623",border:"none",borderRadius:12,color:"#000",fontSize:15,fontWeight:700,padding:"13px 0",cursor:"pointer"}}>{editId?"Update":"Save"}</button>
+<button onClick={()=>{setAdding(false);setEditId(null);setValidErr("");}}style={{flex:1,background:"#111",border:"none",borderRadius:12,color:"#555",fontSize:14,padding:"13px 0",cursor:"pointer"}}>Cancel</button>
 </div></div>}
 {sorted.slice().reverse().map(l=><div key={l.id}style={card}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
 <div><div style={{color:"#fff",fontSize:13,fontWeight:700}}>{new Date(l.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})}</div>{l.notes&&<div style={{color:"#555",fontSize:11,marginTop:2}}>{l.notes}</div>}</div>
+<div style={{display:"flex",alignItems:"flex-start",gap:12}}>
 <div style={{textAlign:"right"}}><div style={{color:"#f5a623",fontSize:26,fontWeight:800,lineHeight:1}}>{l.weight}</div><div style={{color:"#444",fontSize:10}}>lbs</div></div>
-</div>
+<div style={{display:"flex",gap:10,paddingTop:4}}>
+<button onClick={()=>openEdit(l)}style={{background:"none",border:"none",color:"#5ac8fa",fontSize:11,cursor:"pointer",padding:0}}>edit</button>
+<button onClick={()=>deleteLog(l.id)}style={{background:"none",border:"none",color:"#2a2a3e",fontSize:11,cursor:"pointer",padding:0}}>delete</button>
+</div></div></div>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
 {l.bodyFat?<div style={{background:"#111",borderRadius:8,padding:"6px 8px",textAlign:"center"}}><div style={{color:"#e94560",fontSize:13,fontWeight:700}}>{l.bodyFat}%</div><div style={{color:"#444",fontSize:9}}>body fat</div></div>:null}
 {l.muscleMass?<div style={{background:"#111",borderRadius:8,padding:"6px 8px",textAlign:"center"}}><div style={{color:"#92d36e",fontSize:13,fontWeight:700}}>{l.muscleMass}%</div><div style={{color:"#444",fontSize:9}}>muscle</div></div>:null}
@@ -256,6 +352,8 @@ return(<div>
 </div>)}
 {logs.length===0&&<div style={{textAlign:"center",color:"#333",fontSize:13,padding:"40px 0"}}>No weight entries yet.<br/>Log your starting weight to begin tracking.</div>}
 </div>);}
+
+// ── APP SHELL ────────────────────────────────────────────────
 export default function App(){
 const[logs,setLogs]=useState(()=>ld(SK,ID));
 const[selId,setSelId]=useState(()=>{try{const r=localStorage.getItem(SEL);return r?JSON.parse(r):ld(SK,ID)[0]?.id||1;}catch{return 1;}});
@@ -344,5 +442,4 @@ return(
 {tab==="weight"&&<WeightTab/>}
 <div style={{textAlign:"center",color:"#111",fontSize:10,marginTop:28}}>CLT CBP · 9/11 STAIR CLIMB · SEP 12 2026</div>
 </div>
-</div>);
-}
+</div>);}
